@@ -1,0 +1,45 @@
+version: "3.5"
+
+services:
+  node:
+    image: dconnolly/bitcoin-cash:abc-0.17.0
+    volumes:
+      - data:/data
+    networks:
+      - bchnet
+    ports:
+      - target: 18433
+        published: 18433
+        protocol: tcp
+        mode: host
+    configs:
+      - source: bchconf
+        target: /data/bitcoin.conf
+    secrets:
+      - bchrpcuser
+      - bchrpcpassword
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 300s
+
+networks:
+  bchnet:
+    driver: overlay
+
+volumes:
+  data:
+
+secrets:
+  bchrpcuser:
+    external: true
+  bchrpcpassword:
+    external: true
+
+configs:
+  bchconf:
+    file: ./bitcoin.conf
+
