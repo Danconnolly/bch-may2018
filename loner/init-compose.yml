@@ -1,10 +1,10 @@
 version: "3.5"
 
 services:
-  node:
-    image: dconnolly/bitcoin-cash:abc-0.17.0
+  node1:
+    image: dconnolly/bitcoin-cash:abc-0.17
     volumes:
-      - data:/data
+      - data1:/data
     networks:
       - bchnet
     ports:
@@ -12,8 +12,12 @@ services:
         published: 18333
         protocol: tcp
         mode: host
+      - target: 18332
+        published: 18332
+        protocol: tcp
+        mode: host
     configs:
-      - source: bchconf
+      - source: bchconfinit
         target: /data/bitcoin.conf
     secrets:
       - bchrpcuser
@@ -31,7 +35,7 @@ networks:
     driver: overlay
 
 volumes:
-  data:
+  data1:
 
 secrets:
   bchrpcuser:
@@ -40,6 +44,6 @@ secrets:
     external: true
 
 configs:
-  bchconf:
-    file: ./bitcoin.conf
+  bchconfinit:
+    file: ./init.conf
 

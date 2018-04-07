@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# if rpcuser doesnt exist, create
+if [[ $(docker secret ls --filter name=bchrpcuser -q) == "" ]]; then
+	cat /dev/urandom | tr -dc _A-Z-a-z-0-9 | head -c16 | docker secret create bchrpcuser -
+	cat /dev/urandom | tr -dc _A-Z-a-z-0-9 | head -c16 | docker secret create bchrpcpassword -
+fi
+
+
+# run as a swarm stack
+docker stack deploy -c init-compose.yml bchabcmay2018loner
+
+

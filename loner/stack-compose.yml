@@ -1,0 +1,63 @@
+version: "3.5"
+
+services:
+  node1:
+    image: dconnolly/bitcoin-cash:abc-0.17.0
+    volumes:
+      - data1:/data
+    networks:
+      - bchnet
+    configs:
+      - source: bchconf1
+        target: /data/bitcoin.conf
+    secrets:
+      - bchrpcuser
+      - bchrpcpassword
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 300s
+  node2:
+    image: dconnolly/bitcoin-cash:abc-0.17.0
+    volumes:
+      - data2:/data
+    networks:
+      - bchnet
+    configs:
+      - source: bchconf2
+        target: /data/bitcoin.conf
+    secrets:
+      - bchrpcuser
+      - bchrpcpassword
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 300s
+
+
+networks:
+  bchnet:
+    driver: overlay
+
+volumes:
+  data1:
+  data2:
+
+secrets:
+  bchrpcuser:
+    external: true
+  bchrpcpassword:
+    external: true
+
+configs:
+  bchconf1:
+    file: ./bitcoin1.conf
+  bchconf2:
+    file: ./bitcoin2.conf
+
