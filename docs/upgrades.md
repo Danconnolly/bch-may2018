@@ -62,3 +62,20 @@ updated implementations to connect to it. However, this solution reduces
 the 'unfettered access' requirement. If access is given to others, then
 it is also not resilient to attack because it is not possible to
 completely control the configuration of all peers.
+
+Another option is:
+
+* start a new node, the "root" node & miner, and sync to the existing testnet
+* publicize this node and the parameters (`monolithactivationtime`)
+* at the activation time, disconnect the root node from the network
+* continue mining until a block is produced after the activation time
+* whitelist the first block produced after the activation time - or invalidate the competing block
+* re-connect the root node to the network
+* publicize the hash of the whitelisted block
+
+Other nodes that wish to join the upgraded test network can connect to the
+"root" node and also whitelist the upgraded block. Note that nodes joining
+this network may become banned by the rest of the testnet.
+
+One disadvantage of this method is that the changeover during the actual
+upgrade is not tested.
