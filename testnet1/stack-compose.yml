@@ -20,9 +20,6 @@ services:
       - bchrpcpassword
     deploy:
       replicas: 1
-      placement:
-        constraints:
-          - node.hostname == ron
       restart_policy:
         condition: on-failure
         delay: 5s
