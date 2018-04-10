@@ -11,6 +11,7 @@ services:
       - target: 18333
         published: 18333
         protocol: tcp
+        mode: host
     configs:
       - source: bchconf
         target: /data/bitcoin.conf
@@ -19,6 +20,9 @@ services:
       - bchrpcpassword
     deploy:
       replicas: 1
+      placement:
+        constraints:
+          - node.hostname == ron
       restart_policy:
         condition: on-failure
         delay: 5s
