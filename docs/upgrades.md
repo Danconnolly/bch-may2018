@@ -79,3 +79,6 @@ this network may become banned by the rest of the testnet.
 
 One disadvantage of this method is that the changeover during the actual
 upgrade is not tested.
+
+Alternatively, just throw a bunch of hashpower at the fork.
+
