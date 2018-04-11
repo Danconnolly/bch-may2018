@@ -1,5 +1,5 @@
 #!/bin/bash
-export LC_ALL=C.UTF-8
+export LC_ALL=en_US.UTF-8
 
 # to test the op_cat opcode, to ensure that it does not cause memory issues
 
