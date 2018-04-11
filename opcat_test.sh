@@ -8,7 +8,7 @@ export LC_ALL=en_US.UTF-8
 CLI="docker exec --user bitcoin $(docker ps --filter name=bchabcmay -q) /usr/local/bin/bitcoin-cli -conf=/home/bitcoin/bitcoin.conf "
 #CLITX="/home/daniel/bin/bitcoin-tx -regtest "
 CLITX="docker exec --user bitcoin $(docker ps --filter name=bchabcmay -q) /usr/local/bin/bitcoin-tx -conf=/home/bitcoin/bitcoin.conf "
-SCRIPT='1 1 XOR'
+SCRIPT="1 0 XOR DROP OP_DUP OP_HASH160 0x1455c10a3aba166ff020568d45b3d49941e92153bb OP_EQUALVERIFY OP_CHECKSIG"
 FEE=0.0001
 COUNT=1
 OUTPUTSPERTX=1
@@ -32,7 +32,9 @@ function getUnspent () {
     while [  $COUNTER -lt $COUNT ]; do
         INDEX=$((1+COUNTER))
         UTXO=`echo $ALL_UTXOS| jq ".[-$INDEX]"`
-        OUTPOINT=`echo $UTXO | jq .txid | sed -e 's/^"//' -e 's/"$//'`:0
+        OUTTX=`echo $UTXO | jq .txid | sed -e 's/^"//' -e 's/"$//'`
+	OINDEX=$(echo $UTXO | jq .vout)
+	OUTPOINT=$(echo $OUTTX:$OINDEX)
         VALUE=`echo $UTXO | jq .amount | sed -e 's/^"//' -e 's/"$//'`
 
 	if [ $VALUE != "null" ]; then
@@ -85,6 +87,7 @@ function sendTxs () {
         TXID=`$CLI sendrawtransaction $TX`
         TXIDS="$TXIDS $TXID|$V"
     done
+    $ECHO "tx sent, txids=$TXIDS"
 }
 
 
@@ -102,11 +105,10 @@ function createSpendTxs () {
           let COUNTER=COUNTER+1 
         done
 
-        TXCMD="$TXCMD outscript=$VALUE:\"$SCRIPT\""
+        TXCMD="$TXCMD outaddr=$VALUE:$RECOVERADDR"
         TX1=`eval $TXCMD`
- 
 
-       STXS="$STXS $TX"
+        STXS="$STXS $TX"
     done
 }
 
@@ -114,8 +116,12 @@ function sendSpendTxs () {
     $ECHO " ## Sending Spend TXs, USING <SCRIPT> ## TX length:$LENGTH b"
     for TX in $STXS; do
         TXID=`$CLI sendrawtransaction $TX`
+	$ECHO "spendtx sent, txid=$TXID"
     done
 }
+
+RECOVERADDR=$($CLI getnewaddress | cut -d ":" -f 2)
+$ECHO "recovery address=$RECOVERADDR"
 
 getUnspent
 $ECHO "unspent tx = $UNSPENT"
