@@ -1,11 +1,12 @@
 #!/bin/bash
+export LC_ALL=C.UTF-8
 
 # to test the op_cat opcode, to ensure that it does not cause memory issues
 
 # script based on https://github.com/matiu/opcode-tests/blob/master/stress-opcodes.sh
-#CLI="bitcoin-cli "
+#CLI="/home/daniel/bin/bitcoin-cli -regtest "
 CLI="docker exec --user bitcoin $(docker ps --filter name=bchabcmay -q) /usr/local/bin/bitcoin-cli -conf=/home/bitcoin/bitcoin.conf "
-#CLITX="bitcoin-tx "
+#CLITX="/home/daniel/bin/bitcoin-tx -regtest "
 CLITX="docker exec --user bitcoin $(docker ps --filter name=bchabcmay -q) /usr/local/bin/bitcoin-tx -conf=/home/bitcoin/bitcoin.conf "
 SCRIPT='1 1 XOR'
 FEE=0.0001
