@@ -4,11 +4,18 @@
 # DO NOT RUN THIS ON MAINNET - it loses funds and also exposes funds to theft
 # script based on https://github.com/matiu/opcode-tests/blob/master/stress-opcodes.sh
 
+# requires a local node on the testnet with monolith enabled and an active wallet with funds
+# the script will take the first unspent txo it finds in the nodes wallet
+# it will send a small tx to the second spending tx - this amount is unrecoverable
+# it will send the remainder to a new address from the nodes wallet
+
 # creates a funding tx with two outputs
 #	first output script is valid, OP_CAT top of stack up to 520 bytes
 #       second output script is invalid, OP_CAT top of stack up to 521 bytes
 # then creates a tx for each output script, returning funds
 # second tx should fail
+
+# license: please feel free to copy this and use as needed.
 
 export LC_ALL=en_US.UTF-8               # remove possible locale problems
 
@@ -49,7 +56,6 @@ LOWVAL=$(echo "$FEE * 2" | bc -l)
 LOWVAL=$(printf %.8f $LOWVAL)
 
 TXCMD="$CLITX -create in=$OUTPOINT outscript=$HIGHVAL:\"$SCRIPT1\" outscript=$LOWVAL:\"$SCRIPT2\""
-#echo $TXCMD
 
 FUNDTXRAW=$(eval $TXCMD)
 FTXRAWSIGN=$($CLI signrawtransaction $FUNDTXRAW)
@@ -59,7 +65,6 @@ if [ $COMPLETE == "false" ]; then
     exit 1
 fi
 FTXRAWSIGN=$(echo $FTXRAWSIGN | jq .hex  | sed -e 's/^"//' -e 's/"$//')
-#echo "funding tx signed, raw=$FTXRAWSIGN"
 FTXID=$($CLI sendrawtransaction $FTXRAWSIGN)
 echo "funding tx sent, txid=$FTXID"
 
@@ -69,16 +74,17 @@ RETVAL=$(printf %.8f $RETVAL)
 TXCMD="$CLITX -create in=$FTXID:0 outaddr=$RETVAL:$RECOVERADDR"
 S1RAW=$(eval $TXCMD)
 S1TXID=$($CLI sendrawtransaction $S1RAW)
-echo "sent first tx, txid=$S1TXID"
+echo "PASS: sent first spending tx, txid=$S1TXID"
 
 # spend second output, should fail
 TXCMD="$CLITX -create in=$FTXID:1 outaddr=$FEE:$RECOVERADDR"
 S2RAW=$(eval $TXCMD)
+echo "raw second spending tx=$S2RAW"
 S2RESULT=$($CLI sendrawtransaction $S2RAW >/dev/null 2>&1)
 if [ $? == 26 ]; then
-    echo "send of second spending tx failed as expected"
+    echo "PASS: send of second spending tx failed as expected"
 else
-    echo "send of second spending tx did not fail as expected, result=$S2RESULT"
+    echo "FAIL: send of second spending tx did not fail as expected, result=$S2RESULT"
     exit 1
 fi
 
